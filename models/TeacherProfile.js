@@ -24,7 +24,7 @@ const tutorSchema = new mongoose.Schema({
       type:Number
   },
   exams:[examSchema],
-  Region:[String],
+  Region:String,
   education:[educationSchema],
   currentStatus:{
       type:Number           //0:Full Time, 1:Part Time, 2:Studying
@@ -34,7 +34,8 @@ const tutorSchema = new mongoose.Schema({
   },
   title:{
       type:String               //for cards
-  }
+  },
+
 });
 
 module.exports = mongoose.model('Tutors', tutorSchema);

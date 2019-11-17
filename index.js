@@ -7,7 +7,6 @@ const process = require('process')
 const bodyParser = require('body-parser')
 const User = require('./models/User')
 const Teacher = require('./models/TeacherProfile')
-const Student = require('./models/StudentProfile')
 const Region = require('./models/Regions')
 const Exam = require('./models/Exams')
 const mongoose = require('mongoose')
@@ -43,8 +42,16 @@ app.post('/api/addUser', (req, res) => {
             res.json(err)
         }
         Activity.create({ firebaseUID: doc.firebaseUID })
-        if(doc.userType===false){
-            Student.create({firebaseUID:doc.firebaseUID},(er,profile)=>{
+        if(doc.userType===true){
+            let data = {
+                offerRate:user.offerRate,
+                title:user.title,
+                description:user.description,
+                firebaseUID:user.firebaseUID,
+                education:user.education,
+                exams:user.exams
+            }
+            Teacher.create(data,(er,profile)=>{
                 if(er)return res.json({message:"Failed",er})
                 else{
                     let data = {
@@ -58,20 +65,11 @@ app.post('/api/addUser', (req, res) => {
                 }
             })
         }
-        else if(doc.userType===true){
-            Teacher.create({firebaseUID:doc.firebaseUID},(er,profile)=>{
-                if(er)return res.json({message:"Failed",er})
-                else{
-                    let data = {
-                        doc,
-                        profile
-                    }
-                    return res.json({
-                        message: "Success",
-                        user: data
-                    })
-                }
-            })
+        else{
+            if(er)return res.json({message:"Failed",er})
+            else{
+                return res.json(handleSuccess(doc))
+            }
         }
     })
 })
@@ -132,32 +130,32 @@ app.get('/api/allTutors:page',(req,res)=>{ //tested
         })
     })
 })
-app.get('/api/allStudents:page',(req,res)=>{ //tested
-    var perPage = 20
-    var page = req.params.page || 1
-    User.find({
-        userType:false
-    }).skip((perPage * page) - perPage).limit(perPage).exec((error, data) => {
-        if(error)res.json(handleErr(error))
-        let profiles = data.map(user=>{
-            let obj = {
-            }
-            obj.user = user
-            Student.findOne({firebaseUID:user.firebaseUID},(er,doc)=>{
-                if(er)return res.json(handleErr(er))
-                else{
-                    obj.student = doc
-                    return obj
-                }
-            })
-        })
-        res.json({
-            profiles,
-            current: page,
-            pages: Math.ceil(data.length / perPage)
-        })
-    })
-})
+// app.get('/api/allStudents:page',(req,res)=>{ //tested
+//     var perPage = 20
+//     var page = req.params.page || 1
+//     User.find({
+//         userType:false
+//     }).skip((perPage * page) - perPage).limit(perPage).exec((error, data) => {
+//         if(error)res.json(handleErr(error))
+//         let profiles = data.map(user=>{
+//             let obj = {
+//             }
+//             obj.user = user
+//             Student.findOne({firebaseUID:user.firebaseUID},(er,doc)=>{
+//                 if(er)return res.json(handleErr(er))
+//                 else{
+//                     obj.student = doc
+//                     return obj
+//                 }
+//             })
+//         })
+//         res.json({
+//             profiles,
+//             current: page,
+//             pages: Math.ceil(data.length / perPage)
+//         })
+//     })
+// })
 app.post('/api/addExam',(req,res)=>{
     if(req.body){
         let exam = req.body
@@ -174,20 +172,6 @@ app.post('/api/addSubject',(req,res)=>{
             if(err)return res.json(handleErr(err))
             else{
                 res.json(handleSuccess(doc))
-            }
-        })
-    }
-})
-app.put('/api/addStudentDetails',(req,res)=>{
-    let data =req.body
-    if(data.firebaseUID!==undefined){
-        Student.findOneAndUpdate({firebaseUID:data.firebaseUID},data,{new:true},(er,doc)=>{
-            if(er)return res.json({message:"Failed",er})
-            else{
-                return res.json({
-                    message:"Success",
-                    doc
-                })
             }
         })
     }
