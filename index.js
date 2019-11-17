@@ -9,6 +9,7 @@ const User = require('./models/User')
 const Teacher = require('./models/TeacherProfile')
 const Region = require('./models/Regions')
 const Exam = require('./models/Exams')
+const Post = require('./models/Post')
 const mongoose = require('mongoose')
 const url = 'mongodb://demo:demo123@ds245018.mlab.com:45018/studentportal'
 const port = process.env.PORT || 5000
@@ -42,7 +43,7 @@ app.post('/api/addUser', (req, res) => {
             res.json(err)
         }
         Activity.create({ firebaseUID: doc.firebaseUID })
-        if(doc.userType===true){
+        if(doc.userType===false){
             let data = {
                 offerRate:user.offerRate,
                 title:user.title,
@@ -235,6 +236,25 @@ app.post('/api/addRegion',(req,res)=>{
             else res.json(handleSuccess(doc))
         })
     }
+})
+app.post('/api/createPost',(req,res)=>{
+    if(req.body.studentFirebaseUID){
+        let post = req.body
+        Post.create(post,(err,doc)=>{
+            if(err)return res.json(handleErr(err))
+            else{
+                return res.json(handleSuccess(doc))
+            }
+        })
+    }
+})
+app.get('/api/getPosts',(req,res)=>{  
+    Post.find({},(err,docs)=>{
+        if(err)return res.json(handleErr(err))
+        else{
+            return res.json(handleSuccess(docs))
+        }
+    })
 })
 
 //Server

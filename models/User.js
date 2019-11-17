@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
       type:Boolean      //0:Male , 1:Female
   },
   userType:{
-      type:Boolean,      //false:Student, true:Tutor,
+      type:Boolean,      //true:Student, false:Tutor,
       default:false
   }
 });
